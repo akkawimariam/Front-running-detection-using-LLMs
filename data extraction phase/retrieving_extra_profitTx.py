@@ -16,13 +16,11 @@ OUTPUT_FILE = "insertion_dataset_with_extra_profits.json"
 CHECKPOINT_FILE = "checkpoint_insertion_dataset.json"
 FAILED_FILE = "failed_entries_insertion.log"
 
-# Transfer topics (same as before)
 ERC20_TRANSFER_TOPIC = "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"
 ERC1155_SINGLE_TRANSFER_TOPIC = "0xc3d58168c5ae7397731d063d5bbf3d657854427343f4c083240f7aacaa2d0f62"
 ERC1155_BATCH_TRANSFER_TOPIC = "0x4a39dc06d4c0dbc64b70af90fd698a233a518aa5d07e595d983b8c0526c8f7fb"
 ERC721_TRANSFER_TOPIC = "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"
 
-# Performance settings (same as before)
 MAX_WORKERS = 3
 REQUESTS_PER_SECOND = 5
 RETRY_LIMIT = 5
@@ -63,8 +61,8 @@ limiter = RateLimiter()
 connection_state = {
     'last_success': time.time(),
     'consecutive_fails': 0,
-    'max_retries': 100,  # ~24 hours of retries
-    'backoff_base': 5,   # seconds
+    'max_retries': 100,  
+    'backoff_base': 5,   
 }
 connection_lock = Lock()
 
@@ -83,20 +81,17 @@ def check_connection(force_retry=False):
     global connection_state
     
     with connection_lock:
-        # Reset if we have success
         if connection_state['consecutive_fails'] == 0 and not force_retry:
             return True
             
-        # Calculate backoff: 5, 10, 20, 40, ... max 1 hour
         backoff = min(
             connection_state['backoff_base'] * 2 ** connection_state['consecutive_fails'],
-            3600  # 1 hour max
+            3600  
         )
         
         print(f"Connection issues detected. Waiting {backoff:.0f}s (attempt {connection_state['consecutive_fails']+1}/{connection_state['max_retries']})")
         time.sleep(backoff)
         
-        # Test connection to reliable services
         test_urls = [
             "https://1.1.1.1",  # Cloudflare DNS
             "https://8.8.8.8",  # Google DNS
@@ -821,4 +816,5 @@ def main():
     print(f"Total processing time: {total_time/60:.1f} minutes")
 
 if __name__ == "__main__":
+
     main()
