@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Frontrunning Attack Classification - Converting Causal LM to Classification
-Input Length Ablation Study: 8, 64, 128, 256, 512 tokens.
+Input Length Ablation Study: 64, 128, 256, 512 tokens.
 With LoRA and 4-bit Quantization
 """
 
@@ -57,12 +57,12 @@ warnings.filterwarnings("ignore", category=ConvergenceWarning)
 DEFAULT_MAX_LENGTH = 128
 NUM_LABELS = 3  # displacement, insertion, suppression
 
-# ================ MODEL CONFIGURATION ================
+# ================ MODELS CONFIGURATION ================
 MODEL_CONFIGS = {
     "gemma2": {
         "name": "Gemma-2-2B-IT",
         "path": "./gemma-2-2b-it",
-        "torch_dtype": "float16",  # Changed to string
+        "torch_dtype": "float16",  
         "batch_size": 4,
         "lora_rank": 16,
         "lora_alpha": 32,
@@ -70,7 +70,7 @@ MODEL_CONFIGS = {
     "llama3": {
         "name": "Llama-3.2-3B-Instruct", 
         "path": "./llama-3.2-3b-instruct",
-        "torch_dtype": "float16",  # Changed to string
+        "torch_dtype": "float16",  
         "batch_size": 2,
         "lora_rank": 16,
         "lora_alpha": 32,
@@ -339,11 +339,8 @@ class ResearchTrainer:
 
         self.dataset_manager = FrontrunningDataset(model_config["path"], max_length)
         if self.dataset_manager.tokenizer.pad_token is None:
-            # Use the EOS token for padding
             self.dataset_manager.tokenizer.pad_token = self.dataset_manager.tokenizer.eos_token
-            # Set the classification token to EOS, as required by AutoModelForSequenceClassification with Llama
             self.dataset_manager.tokenizer.cls_token = self.dataset_manager.tokenizer.eos_token
-        # 🎯 END FIX 🎯
 
         self.model = self._load_model()
 
@@ -355,7 +352,6 @@ class ResearchTrainer:
         self.logger.info("Converting causal LM model to sequence classification...")
         
         try:
-            # Convert string dtype to torch dtype
             torch_dtype = getattr(torch, self.model_config['torch_dtype'])
             
             quantization_config = BITSANDBYTES_CONFIG if self.use_quantization else None
@@ -445,12 +441,10 @@ class ResearchTrainer:
             
         self.logger.info(f"Class counts: {class_counts}, weights: {class_weights}")
 
-        # ============ ADD THIS BLOCK HERE ============
         batch_size = self.model_config.get("batch_size", self.args.batch_size)
-        if self.max_length == 256:  # Conservative for longest sequence
-            batch_size = max(1, batch_size // 2)  # Halve batch size for safety
+        if self.max_length == 256:  
+            batch_size = max(1, batch_size // 2) 
             self.logger.info(f"Reduced batch size to {batch_size} for 256-token sequence")
-        # ============ END OF ADDED BLOCK ============
     
         training_args = TrainingArguments(
             output_dir=os.path.join(self.output_dir, "temp_training"),
@@ -619,7 +613,6 @@ class ResearchTrainer:
         training_args_dict = training_args.to_dict()
         training_args_dict.pop("report_to", None)
         
-        # Apply nuclear cleaning to EVERYTHING
         full_results = {
             "args": nuclear_clean(vars(self.args)),
             "model_config": nuclear_clean(self.model_config),
@@ -789,4 +782,5 @@ if __name__ == "__main__":
                 
     print(f"✅ Successful experiments: {successful_experiments}/{total_experiments}")
     print(f"📊 Output directory: {main_output_dir}")
+
     print(f"{'='*80}\n")
