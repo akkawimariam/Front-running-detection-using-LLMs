@@ -25,13 +25,11 @@ RETRY_LIMIT = 3
 MAX_CACHE_SIZE = 20000
 BATCH_SIZE = 100
 
-# Global state
 stats = {
     'total_processed': 0,
     'max_blocks_used': 0
 }
 
-# Caches
 block_cache = OrderedDict()
 tx_details_cache = {}
 
@@ -143,7 +141,7 @@ def get_attacker_transactions(attacker: str, start_block: int) -> List[str]:
     while current_block >= full_start:
         params = {
             "fromBlock": hex(current_block),
-            "toBlock": hex(current_block),  # Single block request
+            "toBlock": hex(current_block), 
             "fromAddress": attacker,
             "category": ["external"],
             "withMetadata": True
@@ -172,7 +170,6 @@ def get_attacker_transactions(attacker: str, start_block: int) -> List[str]:
         
         current_block -= 1
     
-    # Flatten all transaction hashes
     all_tx_hashes = []
     for block in sorted(block_to_txs.keys(), reverse=True):
         all_tx_hashes.extend(block_to_txs[block])
@@ -264,8 +261,6 @@ def process_entry(entry: Dict) -> Dict:
     enriched_entry = entry.copy()
     
     try:
-        # Access the nested fields
-        #original_data = entry.get('_original', {})
         attacker = entry.get('attacker')
         attacker_details = entry.get('attacker_details', {})
 
@@ -275,7 +270,6 @@ def process_entry(entry: Dict) -> Dict:
 
         attack_tx = entry.get('attackTx')
         
-        # Get victim block from victim_details
         victim_details = entry.get('victim_details', {})
         victim_block = victim_details.get('blockNumber')
         
@@ -284,13 +278,11 @@ def process_entry(entry: Dict) -> Dict:
             enriched_entry['attacker_transactions'] = []
             return enriched_entry
         
-        # Convert victim block to integer
         victim_block = hex_to_int(victim_block)
         
         # Scan for attacker transactions
         attacker_txs = scan_backward_for_attacker(attacker, victim_block)
         
-        # Ensure attackTx is included
         if not any(tx['hash'] == attack_tx for tx in attacker_txs):
             tx_data = batch_request('eth_getTransactionByHash', [[attack_tx]])
             if tx_data and tx_data[0]:
@@ -342,9 +334,7 @@ def has_attacker_transactions(entry: Dict) -> bool:
     # Check if attacker_transactions exists and is not empty
     if 'attacker_transactions' in entry:
         attacker_txs = entry['attacker_transactions']
-        # Check if it's a list with at least one transaction
         if isinstance(attacker_txs, list) and len(attacker_txs) > 0:
-            # Additional check: make sure it's not just placeholder data
             if len(attacker_txs) == 1 and attacker_txs[0].get('hash') == 'missing':
                 return False
             return True
@@ -379,7 +369,6 @@ def batch_process(entries: List[Dict]) -> List[Dict]:
         except Exception as e:
             print(f"Error loading checkpoint: {str(e)}")
     
-    # Filter entries that still need processing
     remaining_entries = entries[len(processed):]
     entries_needing_processing = filter_entries_needing_processing(remaining_entries)
     
@@ -448,14 +437,12 @@ def main():
         if has_attacker_transactions(entry):
             final_data.append(entry)  # Keep already processed entries
         else:
-            # Find the processed version of this entry
             processed_entry = next((e for e in processed_data if e.get('_original', {}).get('hash') == entry.get('hash')), None)
             if processed_entry:
                 final_data.append(processed_entry)
             else:
                 final_data.append(entry)  # Keep original if not processed
     
-    # === YOUR EXISTING VERIFICATION CODE GOES HERE ===
     print("\nRunning verification checks...")
     for i, entry in enumerate(final_data):
         # Access nested fields for verification
@@ -518,5 +505,6 @@ def main():
     
     print(f"\nMax blocks used in any attack: {stats['max_blocks_used']}")
     print(f"Total processing time: {total_time/60:.1f} minutes")
+
 
 main()
