@@ -4,7 +4,7 @@ This repository contains the implementation, datasets, and experiments for our r
 
 ## 📌 Overview
 Front-running attacks (displacement, insertion, suppression) represent a critical threat in decentralized blockchain systems.  
-This project explores transformer-based models (Llama, Gemma) for detecting such attacks, comparing them with traditional baselines (MLP+LSTM).
+This project explores transformer-based models (Llama, Gemma) for detecting and classifying such attacks.
 
 ## 🛠 Features
 - Data preprocessing pipeline using **Alchemy** and **Chainstack RPC**.  
