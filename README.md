@@ -1,6 +1,6 @@
 # Front-Running Attack Detection using Transformer Models
 
-This repository contains the implementation, datasets, and experiments for our published research on detecting front-running attacks in Ethereum transactions using transformer-based models. For more information, you may check the paper through this link: (https://ieeexplore.ieee.org/abstract/document/11418824).
+This repository contains the implementation, datasets, and experiments for our published research on detecting front-running attacks in Ethereum transactions using transformer-based models. For more information, you may check the paper through this link: [(https://ieeexplore.ieee.org/abstract/document/11418824)](https://ieeexplore.ieee.org/abstract/document/11418824).
 
 ## 📌 Overview
 Front-running attacks (displacement, insertion, suppression) represent a critical threat in decentralized blockchain systems.  
